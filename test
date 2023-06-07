@@ -1,0 +1,15 @@
+#include <Servo.h>
+
+Servo Test;
+
+void setup() {
+  // put your setup code here, to run once:
+  Test.attach(5, 1000, 2000);
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:giot
+  Test.write(1200);
+
+}
