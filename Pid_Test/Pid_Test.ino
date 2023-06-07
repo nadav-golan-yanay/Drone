@@ -1,6 +1,6 @@
 #include "clicli.h"
 #include "PID.h"
-PID mydrone(10, 9);
+PID mydrone(6, 5);
 clicli mycli(mydrone);  
 
 void setup() { 
@@ -13,5 +13,6 @@ void setup() {
 
 void loop() { 
   mycli.run();
-  //mydrone.getattached(0);
+  //mydrone.PIDcalc(mydrone.PichRead(), 0);
+
  }

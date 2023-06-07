@@ -7,6 +7,10 @@
    void begin();   //must be called from  void setup()
    void MotorTest(int mot, int speed);
    void getattached(int mot);
+   int PichRead();
+  double PIDcalc(double inp, int sp);
+  void Stab(int dag, int speed, double KP, double KI, double KD);
+  void Fly(int powerF, int powerB);
 
   private:
     //variable:

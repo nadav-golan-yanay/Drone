@@ -74,6 +74,122 @@ void clicli::run() {
 	       } 
 
       switch (cmd) {
+
+      case '?': //Help ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        Serial.print("This function");
+        delay(300);
+        Serial.print(" will help");
+        delay(300);
+        Serial.print(" you navigate");
+        delay(300);
+        Serial.print(" your way");
+        delay(300);
+        Serial.println(" in the code:");
+        Serial.println(" ");
+
+        delay(400);
+        Serial.print("Each commend activate");
+        delay(300);
+        Serial.print(" with a combination.");
+        delay(300);
+        Serial.print(" of a single");
+        delay(300);
+        Serial.print(" LETTER and nombers");
+        delay(300);
+        Serial.println(" thats comes after.");
+        delay(400);
+        Serial.println(" ");
+
+        Serial.println("The order is very important!!!");
+        delay(400);
+        Serial.println(" ");
+
+        Serial.println("ALL letters in lowercase letters!!!");
+        delay(450);
+        Serial.println(" ");
+
+        Serial.println("List of orders:");
+        
+        delay(450); //case h
+        Serial.print("For");
+        delay(300);
+        Serial.print(" seting port to HIGH");
+        delay(300);
+        Serial.print(" - Enter the LETTER");
+        delay(300);
+        Serial.print(" 'h'");
+        delay(300);
+        Serial.print(" and then enter");
+        delay(300);
+        Serial.println(" the port Nomber");
+        Serial.println(" ");
+
+        delay(450); //case l
+        Serial.print("For");
+        delay(300);
+        Serial.print(" seting port to LOW");
+        delay(300);
+        Serial.print(" - Enter the LETTER");
+        delay(300);
+        Serial.print(" 'l'");
+        delay(300);
+        Serial.print(" and then enter");
+        delay(300);
+        Serial.println(" the port Nomber");
+        Serial.println(" ");
+
+        delay(450); //case r
+        Serial.print("For");
+        delay(300);
+        Serial.print(" digital read from port");
+        delay(300);
+        Serial.print(" - Enter the LETTER");
+        delay(300);
+        Serial.print(" 'r'");
+        delay(300);
+        Serial.print(" and then enter");
+        delay(300);
+        Serial.println(" the port Nomber");
+        Serial.println(" ");
+
+        delay(450); //case e
+        Serial.print("For");
+        delay(300);
+        Serial.print(" analog read from port");
+        delay(300);
+        Serial.print(" - Enter the LETTER");
+        delay(300);
+        Serial.print(" 'e'");
+        delay(300);
+        Serial.print(" and then enter");
+        delay(300);
+        Serial.println(" the port Nomber");
+        Serial.println(" ");
+
+        delay(450); //case t
+        Serial.print("For");
+        delay(300);
+        Serial.print(" testing drone motors");
+        delay(300);
+        Serial.print(" - Enter the LETTER");
+        delay(300);
+        Serial.print(" 't'");
+        delay(300);
+        Serial.print(" and then enter");
+        delay(300);
+        Serial.print(" the motor port Nomber");
+        delay(300);
+        Serial.print(" and then enter");
+        delay(300);
+        Serial.println(" the speed Nomber");
+        Serial.println(" ");
+
+        
+
+      break;
+
+
+
        case 'h': //Set port to HIGH
         pinMode(command[1],OUTPUT);
         digitalWrite(command[1],HIGH);
@@ -123,6 +239,7 @@ void clicli::run() {
         mydrone.MotorTest(command[1], command[2]);
         break;
 
+        
        
        message_pos = 0;     //Reset for the next message
       }

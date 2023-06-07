@@ -35,6 +35,20 @@ VectorFloat gravity;    // [x, y, z]            gravity vector
 float euler[3];         // [psi, theta, phi]    Euler angle container
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
+unsigned long currentTime;
+unsigned long previousTime;
+double elapsedTime;
+double error;
+double lastError;
+double input, output;
+double cumError, rateError;
+double kp = 2;
+double ki = 1; 
+double kd = 0;
+int setcolor = 127; //default value for 50% white 50% Black
+bool flag = true;
+int steps = 0;
+
 //motors attach:
 Servo FrontESC;
 Servo BackESC;
@@ -111,8 +125,10 @@ void PID::begin() {
 
 
   //myyy code
-  FrontESC.attach(_MotorPinFront,  1000, 2000);
-  BackESC.attach(_MotorPinBack,  1000, 2000);
+  FrontESC.attach(_MotorPinFront, 1000, 2000);
+  FrontESC.write(0);
+  BackESC.attach(_MotorPinBack, 1000, 2000);
+  BackESC.write(0);
 
 }
 
@@ -131,4 +147,92 @@ void PID::getattached(int mot){
     Serial.println(BackESC.attached());
   }
   
+}
+
+int PID::PichRead(){
+  
+    if (!dmpReady) return;
+    // read a packet from FIFO
+    if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
+             
+        #ifdef OUTPUT_READABLE_YAWPITCHROLL
+            // display Euler angles in degrees
+            mpu.dmpGetQuaternion(&q, fifoBuffer);
+            mpu.dmpGetGravity(&gravity, &q);
+            mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+            return(ypr[1]* 180/M_PI);
+            /*Serial.print("ypr\t");
+            Serial.print(ypr[0] * 180/M_PI);
+            Serial.print("\t");
+            Serial.print(ypr[1] * 180/M_PI);
+            Serial.print("\t");
+            Serial.println(ypr[2] * 180/M_PI);*/
+        #endif
+    }
+}
+
+double PID::PIDcalc(double inp, int sp){
+   currentTime = millis();                //get current time
+   elapsedTime = (double)(currentTime - previousTime)/1000; //compute time elapsed from previous computation (60ms approx). divide in 1000 to get in Sec
+   //Serial.print(currentTime); //for serial plotter
+   //Serial.println("\t"); //for serial plotter
+   error = sp - inp;                                  // determine error
+   cumError += error * elapsedTime;                   // compute integral
+   rateError = (error - lastError)/elapsedTime;       // compute derivative deltaError/deltaTime
+   double out = kp*error + ki*cumError + kd*rateError; //PID output               
+   //Serial.println(cumError);
+   lastError = error;                                 //remember current error
+   previousTime = currentTime;                        //remember current time
+   if(out > 254){out = 254;}    //limit the function for smoother operation
+   if(out < -254){out = -254;}
+   if(cumError > 255 || cumError < -255){cumError = 0; out = 0;} // reset the Integral commulator
+   if(rateError < 0.3 || rateError > -0.3){cumError = 0;}             // reset the Integral commulator
+   Serial.println(out);
+   return out;                                        //the function returns the PID output value 
+  
+}
+
+void PID::Stab(int deg, int speed, double KP, double KI, double KD){
+  kp = KP;
+  ki = KI; 
+  kd = KD;
+  int tempPich = PichRead(); //input value
+  int output =  PIDcalc(tempPich, deg);
+
+  if (output > 0){// right correction (back)
+    int powerB = speed - output;
+    int powerF = speed + output;
+    if (powerB < 0) {
+      powerB = 0; 
+      }
+    if (powerF > 255) {
+      powerF = 255;
+      }
+    //printg('F', 'F', powerR, powerL);
+    Fly(powerB, powerF);
+  }
+ else if (output < 0){//left correction 
+  int powerB = speed + abs(output);
+  int powerF = speed - abs(output);
+  if (powerB > 255) {
+    powerB = 255;
+    }
+  if (powerF < 0) {
+    powerF = 0;
+    }
+     // printg('F', 'F', powerR, powerL);
+    Fly(powerB, powerF);
+  }
+ else if(!output) {//go straight
+    Fly(speed, speed);
+   // Serial.println("going FWD");
+
+  }
+
+
+}
+
+void PID::Fly(int powerF, int powerB){
+  FrontESC.write(powerF);
+  BackESC.write(powerB);
 }
