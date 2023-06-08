@@ -37,14 +37,14 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 
 unsigned long currentTime;
 unsigned long previousTime;
-double elapsedTime;
-double error;
-double lastError;
-double input, output;
-double cumError, rateError;
-double kp = 2;
-double ki = 1; 
-double kd = 0;
+float elapsedTime;
+float error;
+float lastError;
+float input, output;
+float cumError, rateError;
+float kp = 2;
+float ki = 1; 
+float kd = 0;
 int setcolor = 127; //default value for 50% white 50% Black
 bool flag = true;
 int steps = 0;
@@ -129,6 +129,8 @@ void PID::begin() {
   FrontESC.write(0);
   BackESC.attach(_MotorPinBack, 1000, 2000);
   BackESC.write(0);
+  pinMode(13, INPUT_PULLUP);
+
 
 }
 
@@ -179,7 +181,7 @@ double PID::PIDcalc(double inp, int sp){
    error = sp - inp;                                  // determine error
    cumError += error * elapsedTime;                   // compute integral
    rateError = (error - lastError)/elapsedTime;       // compute derivative deltaError/deltaTime
-   double out = kp*error + ki*cumError + kd*rateError; //PID output               
+   float out = kp*error + ki*cumError + kd*rateError; //PID output               
    //Serial.println(cumError);
    lastError = error;                                 //remember current error
    previousTime = currentTime;                        //remember current time
@@ -187,17 +189,20 @@ double PID::PIDcalc(double inp, int sp){
    if(out < -254){out = -254;}
    if(cumError > 255 || cumError < -255){cumError = 0; out = 0;} // reset the Integral commulator
    if(rateError < 0.3 || rateError > -0.3){cumError = 0;}             // reset the Integral commulator
-   Serial.println(out);
    return out;                                        //the function returns the PID output value 
   
 }
 
-void PID::Stab(int deg, int speed, double KP, double KI, double KD){
+void PID::Stab(int deg, int speed, float KP, float KI, float KD){
   kp = KP;
   ki = KI; 
   kd = KD;
   int tempPich = PichRead(); //input value
-  int output =  PIDcalc(tempPich, deg);
+  float output =  PIDcalc(tempPich, deg);
+  Serial.print("Pich - ");
+  Serial.print(tempPich);
+  Serial.print("    |    Out - ");
+  Serial.print(output);
 
   if (output > 0){// right correction (back)
     int powerB = speed - output;
@@ -205,26 +210,38 @@ void PID::Stab(int deg, int speed, double KP, double KI, double KD){
     if (powerB < 0) {
       powerB = 0; 
       }
-    if (powerF > 255) {
-      powerF = 255;
+    if (powerF > 179) {
+      powerF = 179;
       }
     //printg('F', 'F', powerR, powerL);
-    Fly(powerB, powerF);
+    Fly(powerF, powerB);
+    Serial.print("    |   Front - ");
+    Serial.print(powerF);
+    Serial.print("    |    Back - ");
+    Serial.println(powerB);
   }
  else if (output < 0){//left correction 
   int powerB = speed + abs(output);
   int powerF = speed - abs(output);
-  if (powerB > 255) {
-    powerB = 255;
+  if (powerB > 179) {
+    powerB = 179;
     }
   if (powerF < 0) {
     powerF = 0;
     }
      // printg('F', 'F', powerR, powerL);
-    Fly(powerB, powerF);
+    Fly(powerF, powerB);
+    Serial.print("    |   Front - ");
+    Serial.print(powerF);
+    Serial.print("    |    Back - ");
+    Serial.println(powerB);
   }
  else if(!output) {//go straight
     Fly(speed, speed);
+    Serial.print("    |   Front - ");
+    Serial.print(speed);
+    Serial.print("    |    Back - ");
+    Serial.println(speed);
    // Serial.println("going FWD");
 
   }

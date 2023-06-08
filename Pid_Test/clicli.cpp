@@ -51,7 +51,7 @@ void clicli::run() {
       message[message_pos] = '\0';     //Add null character to string
       Serial.println(message);     //echo the message to terminal
         
-      int command[4];
+      int command[10];
       int argindex = 0;
       char cmd;
       char delim[] = " ";
@@ -184,6 +184,24 @@ void clicli::run() {
         Serial.println(" the speed Nomber");
         Serial.println(" ");
 
+        delay(450); //case s
+        Serial.print("For");
+        delay(300);
+        Serial.print(" PID fly");
+        delay(300);
+        Serial.print(" - Enter the LETTER");
+        delay(300);
+        Serial.print(" 's'");
+        delay(300);
+        Serial.print(" and then enter");
+        delay(300);
+        Serial.print(" the motor port Nomber");
+        delay(300);
+        Serial.print(" and then enter");
+        delay(300);
+        Serial.println(" the speed Nomber");
+        Serial.println(" ");
+
         
 
       break;
@@ -238,6 +256,25 @@ void clicli::run() {
         case 't': //test drone motors
         mydrone.MotorTest(command[1], command[2]);
         break;
+
+        case 's':
+        while (true){
+          mydrone.Stab(command[1], command[2], command[3], command[4], command[5]);
+          if (digitalRead(13) == 0){
+            mydrone.Fly(0, 0);
+            break;
+          }
+        }
+        break;
+
+        case 'c':
+        mydrone.Fly(0, 0);
+        break;
+
+        case 'f':
+        mydrone.Fly(command[1], command[2]);
+        break;
+
 
         
        
