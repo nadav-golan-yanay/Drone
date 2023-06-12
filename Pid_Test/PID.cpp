@@ -42,8 +42,8 @@ float error;
 float lastError;
 float input, output;
 float cumError, rateError;
-float kp = 2;
-float ki = 1; 
+float kp = 0;
+float ki = 0; 
 float kd = 0;
 int setcolor = 127; //default value for 50% white 50% Black
 bool flag = true;
@@ -173,23 +173,28 @@ int PID::PichRead(){
     }
 }
 
-double PID::PIDcalc(double inp, int sp){
-   currentTime = millis();                //get current time
-   elapsedTime = (double)(currentTime - previousTime)/1000; //compute time elapsed from previous computation (60ms approx). divide in 1000 to get in Sec
-   //Serial.print(currentTime); //for serial plotter
-   //Serial.println("\t"); //for serial plotter
-   error = sp - inp;                                  // determine error
-   cumError += error * elapsedTime;                   // compute integral
-   rateError = (error - lastError)/elapsedTime;       // compute derivative deltaError/deltaTime
-   float out = kp*error + ki*cumError + kd*rateError; //PID output               
-   //Serial.println(cumError);
-   lastError = error;                                 //remember current error
-   previousTime = currentTime;                        //remember current time
-   if(out > 254){out = 254;}    //limit the function for smoother operation
-   if(out < -254){out = -254;}
-   if(cumError > 255 || cumError < -255){cumError = 0; out = 0;} // reset the Integral commulator
-   if(rateError < 0.3 || rateError > -0.3){cumError = 0;}             // reset the Integral commulator
-   return out;                                        //the function returns the PID output value 
+float PID::PIDcalc(double inp, int sp){
+  kp = 0;
+  ki = 1; 
+  kd = 0;
+  currentTime = millis();                //get current time
+  elapsedTime = (float)(currentTime - previousTime); //compute time elapsed from previous computation (60ms approx). divide in 1000 to get in Sec
+  Serial.println(elapsedTime);
+  //Serial.print(currentTime); //for serial plotter
+  //Serial.println("\t"); //for serial plotter
+  /*error = sp - inp;                                  // determine error
+  cumError += error * elapsedTime;                   // compute integral
+  //Serial.println(cumError);
+  rateError = (error - lastError)/elapsedTime;       // compute derivative deltaError/deltaTime
+  float out = kp*error + ki*cumError + kd*rateError; //PID output               
+  //Serial.println(cumError);
+  lastError = error;                                 //remember current error
+  previousTime = currentTime;                        //remember current time
+  if(out > 254){out = 254;}    //limit the function for smoother operation
+  if(out < -254){out = -254;}
+  if(cumError > 255 || cumError < -255){cumError = 0; out = 0;} // reset the Integral commulator
+  if(rateError < 0.3 || rateError > -0.3){cumError = 0;}             // reset the Integral commulator
+  return out;          */                              //the function returns the PID output value 
   
 }
 

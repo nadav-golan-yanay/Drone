@@ -51,7 +51,7 @@ void clicli::run() {
       message[message_pos] = '\0';     //Add null character to string
       Serial.println(message);     //echo the message to terminal
         
-      int command[10];
+      float command[10];
       int argindex = 0;
       char cmd;
       char delim[] = " ";
@@ -67,7 +67,7 @@ void clicli::run() {
           if (argindex == 0) {
             cmd = ptr[0];
           }
-          command[argindex] = atoi(ptr);   
+          command[argindex] = atof(ptr);   
           //Serial.println(command[argindex]);
           argindex++;  
 		      ptr = strtok(NULL, delim);
@@ -275,6 +275,14 @@ void clicli::run() {
         mydrone.Fly(command[1], command[2]);
         break;
 
+        case 'g':
+        while (true){
+          if (digitalRead(13) == 0){
+            Serial.println(mydrone.PichRead());
+            break;
+          }
+        }
+        break;
 
         
        

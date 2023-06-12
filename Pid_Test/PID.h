@@ -8,7 +8,7 @@
    void MotorTest(int mot, int speed);
    void getattached(int mot);
    int PichRead();
-  double PIDcalc(double inp, int sp);
+  float PIDcalc(double inp, int sp);
   void Stab(int dag, int speed, float KP, float KI, float KD);
   void Fly(int powerF, int powerB);
 
