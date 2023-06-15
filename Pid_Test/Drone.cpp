@@ -10,12 +10,11 @@
 
 #include <Arduino.h>
 #include "clicli.h"
-#include "PID.h"
+#include "Drone.h"
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 #include <Wire.h>
 #include <Servo.h>
-
 
 
 //Gyro things:
@@ -46,7 +45,6 @@ float cumError, rateError;
 float kp = 0;
 float ki = 0; 
 float kd = 0;
-
 int setcolor = 127; //default value for 50% white 50% Black
 bool flag = true;
 int steps = 0;
@@ -56,20 +54,14 @@ Servo FrontESC;
 Servo BackESC;
 
 
-double setpoint; // Setpoint value
-
-double integral; // Integral term
-double prevError; // Previous error value
-
-
-PID::PID(int MotorPinFront, int MotorPinBack){
+Drone::Drone(int MotorPinFront, int MotorPinBack){
   //variable:
   _MotorPinFront = MotorPinFront;
   _MotorPinBack = MotorPinBack;
   //pinMode(x, OUTPUT); //pins
 }
 
-void PID::begin() {
+void Drone::begin() {
   Serial.begin(115200);
   
   #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -142,7 +134,7 @@ void PID::begin() {
 
 }
 
-void PID::MotorTest(int mot, int speed){
+void Drone::MotorTest(int mot, int speed){
   if (mot == 0){ //Front
     FrontESC.write(speed);
   } else if (mot == 1) {
@@ -150,7 +142,7 @@ void PID::MotorTest(int mot, int speed){
   }
 }
 
-void PID::getattached(int mot){
+void Drone::getattached(int mot){
   if (mot == 0){ //Front
     Serial.println(FrontESC.attached());
   } else if (mot == 1) {
@@ -159,7 +151,7 @@ void PID::getattached(int mot){
   
 }
 
-int PID::PichRead(){
+int Drone::PichRead(){
   
     if (!dmpReady) return;
     // read a packet from FIFO
@@ -181,50 +173,38 @@ int PID::PichRead(){
     }
 }
 
-float PID::PIDcalc(double inp, int sp){
-  /*Kp = 0.5;
-  Ki = 0.1;
-  Kd = 0;*/
-
-
-  double error = sp - inp;
+float Drone::PIDcalc(double inp, int sp){
+  /*kp = 0;
+  ki = 1; 
+  kd = 0;*/
+  currentTime = millis();                //get current time
+  elapsedTime = (double)(currentTime - previousTime); //compute time elapsed from previous computation (60ms approx). divide in 1000 to get in Sec
+  Serial.print(currentTime - previousTime);
+  Serial.print("     |        ");
+  Serial.print(currentTime);
+  Serial.print("     |        ");
+  Serial.print(previousTime);
+  Serial.print("     |        ");
+  Serial.println(elapsedTime); //for serial plotter
+  //Serial.println("\t"); //for serial plotter
+  /*error = sp - inp;                                  // determine error
   //Serial.println(error);
-
-  // Proportional term
-  double proportional = kp * error;
-  //Serial.println(proportional);
-
-
-  // Integral term
-  integral += error;
-  double integralTerm = ki * integral;
-  //Serial.println(integralTerm);
-
-  // Derivative term
-  double derivative = kd * (error - prevError);
-  //Serial.println(derivative);
-
-  prevError = error;
-  //Serial.println(prevError);
-
-  // Calculate PID output
-  double out = proportional + integralTerm + derivative;
-  //Serial.println(out);
-
-  if(out > 254){out = 254;}    //limit the function for smoother operation
+  cumError += error * elapsedTime;                   // compute integral
+  Serial.println(cumError);
+  rateError = (error - lastError)/elapsedTime;       // compute derivative deltaError/deltaTime
+  float out = kp*error + ki*cumError + kd*rateError; //PID output               
+  //Serial.println(rateError);
+  lastError = error;*/                                 //remember current error
+  previousTime = currentTime;                        //remember current time
+  /*if(out > 254){out = 254;}    //limit the function for smoother operation
   if(out < -254){out = -254;}
-  if(integralTerm > 255){integralTerm = 0; out = 255;} // reset the Integral commulator
-  if(integralTerm < -255){integralTerm = 0; out = -255;} // reset the Integral commulator
-  if(derivative < 0.3 || derivative > -0.3){integralTerm = 0;}             // reset the Integral commulator
-  
-
-  //Serial.println(out)
-  return out;
-  delay(1);
+  if(cumError > 255 || cumError < -255){cumError = 0; out = 0;} // reset the Integral commulator
+  if(rateError < 0.3 || rateError > -0.3){cumError = 0;}             // reset the Integral commulator
+  return out;   */                                     //the function returns the PID output value 
   
 }
 
-void PID::Stab(int deg, int speed, float KP, float KI, float KD){
+void Drone::Stab(int deg, int speed, float KP, float KI, float KD){
   kp = KP;
   ki = KI; 
   kd = KD;
@@ -232,9 +212,6 @@ void PID::Stab(int deg, int speed, float KP, float KI, float KD){
   float output =  PIDcalc(tempPich, deg);
   Serial.print("Pich - ");
   Serial.print(tempPich);
-  if (tempPich = deg){
-    output = 0;
-  }
   Serial.print("    |    Out - ");
   Serial.print(output);
 
@@ -270,16 +247,7 @@ void PID::Stab(int deg, int speed, float KP, float KI, float KD){
     Serial.print("    |    Back - ");
     Serial.println(powerB);
   }
-  else if(!output) {//go straight
-    Fly(speed, speed);
-    Serial.print("    |   Front - ");
-    Serial.print(speed);
-    Serial.print("    |    Back - ");
-    Serial.println(speed);
-   // Serial.println("going FWD");
-
-  }
-  else if(tempPich = 0) {//go straight
+ else if(!output) {//go straight
     Fly(speed, speed);
     Serial.print("    |   Front - ");
     Serial.print(speed);
@@ -292,7 +260,7 @@ void PID::Stab(int deg, int speed, float KP, float KI, float KD){
 
 }
 
-void PID::Fly(int powerF, int powerB){
+void Drone::Fly(int powerF, int powerB){
   FrontESC.write(powerF);
   BackESC.write(powerB);
 }

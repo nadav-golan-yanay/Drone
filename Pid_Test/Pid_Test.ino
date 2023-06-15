@@ -13,8 +13,8 @@ void setup() {
  }
 
 void loop() { 
-  //mycli.run();
-  mydrone.PIDcalc(mydrone.PichRead(), 0);
+  mycli.run();
+  //mydrone.PIDcalc(mydrone.PichRead(), 0);
   //mydrone.Stab(0, 15, 1, 0, 0);
   //delay(10);
   /*Serial.print(mydrone.PIDcalc(mydrone.PichRead(), 0));
